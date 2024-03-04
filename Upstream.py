@@ -7,47 +7,31 @@ class DataCommunicator:
         self.host = host
         self.send_port = send_port
         self.listen_port = listen_port
-        self.send_socket = None
-        self.listen_socket = None
-        self.send_lock = threading.Lock()
-        self.listen_lock = threading.Lock()
+        self.socket = None
+        self.lock = threading.Lock()
+        self.running = True
 
-    def setup_send_socket(self):
-        self.send_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    def setup_listen_socket(self):
-        self.listen_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.listen_socket.bind((self.host, self.listen_port))
-        self.listen_socket.listen(1)
-
-    def connect_send_socket(self):
-        if not self.send_socket:
-            self.setup_send_socket()
-        self.send_socket.connect((self.host, self.send_port))
-
-    def connect_listen_socket(self):
-        if not self.listen_socket:
-            self.setup_listen_socket()
-        client_socket, _ = self.listen_socket.accept()
-        self.listen_socket = client_socket
+    def setup_socket(self):
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket.bind((self.host, self.listen_port))
 
     def send_data(self, data):
-        if not self.send_socket:
-            raise Exception("Send socket not initialized. Call connect_send_socket() first.")
+        if not self.socket:
+            self.setup_socket()
 
-        with self.send_lock:
-            self.send_socket.sendall(data.encode())
+        #with self.lock:
+        self.socket.sendto(data.encode(), (self.host, self.send_port))
 
     def receive_data(self):
-        if not self.listen_socket:
-            raise Exception("Listen socket not initialized. Call connect_listen_socket() first.")
+        if not self.socket:
+            self.setup_socket()
 
-        with self.listen_lock:
-            data = self.listen_socket.recv(1024)
-            return data.decode()
+        #with self.lock:
+        data, _ = self.socket.recvfrom(1024)
+        return data.decode()
 
     def listen_for_data(self):
-        while True:
+        while self.running:
             received_data = self.receive_data()
             if not received_data:
                 break
@@ -55,37 +39,38 @@ class DataCommunicator:
             time.sleep(1)  # Adjust as needed
 
     def close_connection(self):
-        if self.send_socket:
-            self.send_socket.close()
-        if self.listen_socket:
-            self.listen_socket.close()
+        if self.socket:
+            self.socket.close()
 
     def send_data_in_thread(self, data):
-        thread = threading.Thread(target=self.send_data, args=(data,))
-        thread.start()
+        self.Sendthread = threading.Thread(target=self.send_data, args=(data,))
+        self.Sendthread.start()
 
     def start_listener_thread(self):
-        listener_thread = threading.Thread(target=self.listen_for_data)
-        listener_thread.start()
+        self.listener_thread = threading.Thread(target=self.listen_for_data)
+        self.listener_thread.start()
 
-# Example usage:
+    def stop_threads(self):
+        self.running = False
+
+
 if __name__ == "__main__":
     communicator = DataCommunicator('127.0.0.1', 8080, 8081)
 
-    # Connect sending socket
-    communicator.connect_send_socket()
-
-    # Connect receiving socket
-    #communicator.connect_listen_socket()
-
     # Start listener thread
-    #communicator.start_listener_thread()
+    communicator.start_listener_thread()
 
-    # Send data in a separate thread
-    data_to_send = "Hello from Python in a separate thread!"
-    communicator.send_data_in_thread(data_to_send)
+    try:
+        # Send data in a separate thread
+        usrinput = ""
+        while usrinput != "!":
+            usrinput = input(">>>")
+            communicator.send_data_in_thread(usrinput)
+    except KeyboardInterrupt:
+        print("\nExiting due to KeyboardInterrupt...")
+    finally:
+        # Close the connection when done
+        communicator.close_connection()
+        communicator.listener_thread.join(timeout = 3)
 
-    # You can continue doing other work here while the threads run
 
-    # Close the connection when done
-    #communicator.close_connection()
