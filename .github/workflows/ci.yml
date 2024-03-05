@@ -25,7 +25,7 @@ jobs:
 
       - name: Compile and run mock Vehicle Control Unit
         run: |
-          gcc src/DownstreamUDP.c -o rcv.exe -lws2_32
+          gcc src/DownstreamUDP.c -o output/rcv.exe
           ./output/rcv.exe
 
       - name: Run Python script
