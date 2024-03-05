@@ -1,18 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h> // For sleep
 
 #ifdef _WIN32
-    #include <winsock2.h>
-    // Define socklen_t for Windows if it's not already defined
-    typedef int socklen_t;
-    #pragma comment(lib, "ws2_32.lib")
+#include <winsock2.h>
+#include <windows.h>
 #else
-    #include <unistd.h>
-    #include <sys/types.h>
-    #include <sys/socket.h>
-    #include <netinet/in.h>
-    #include <arpa/inet.h>
+#include <pthread.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #endif
 
 #define BUFFER_SIZE 1024
@@ -22,25 +21,49 @@ void error(const char *msg) {
     exit(1);
 }
 
-int main(int argc, char *argv[]) {
-    #ifdef _WIN32
-    WSADATA wsaData;
-    #endif
-    int sockfd, portno, n;
-    socklen_t clilen;
+#ifdef _WIN32
+DWORD WINAPI listener_thread(LPVOID arg) {
+#else
+void *listener_thread(void *arg) {
+#endif
+    int sockfd = *((int *)arg);
+    struct sockaddr_in cli_addr;
+    int clilen; // Changed type to int
     char buffer[BUFFER_SIZE];
-    struct sockaddr_in serv_addr, cli_addr;
+    int n;
+
+    clilen = sizeof(cli_addr);
+    while (1) {
+        memset(buffer, 0, BUFFER_SIZE);
+        n = recvfrom(sockfd, buffer, BUFFER_SIZE, 0, (struct sockaddr *) &cli_addr, &clilen);
+        if (n < 0)
+            error("ERROR on recvfrom");
+        printf("Received packet from %s:%d\n", inet_ntoa(cli_addr.sin_addr), ntohs(cli_addr.sin_port));
+        printf("Data: %s\n", buffer);
+    }
+    
+#ifdef _WIN32
+    return 0;
+#endif
+}
+
+int main(int argc, char *argv[]) {
+#ifdef _WIN32
+    WSADATA wsaData;
+#endif
+    int sockfd, portno;
+    struct sockaddr_in serv_addr;
 
     if (argc < 2) {
         fprintf(stderr, "ERROR, no port provided\n");
         exit(1);
     }
 
-    #ifdef _WIN32
+#ifdef _WIN32
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
         error("Failed to initialize Winsock.");
     }
-    #endif
+#endif
 
     sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     if (sockfd < 0)
@@ -56,22 +79,36 @@ int main(int argc, char *argv[]) {
     if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
         error("ERROR on binding");
 
-    clilen = sizeof(cli_addr);
-    while (1) {
-        memset(buffer, 0, BUFFER_SIZE);
-        n = recvfrom(sockfd, buffer, BUFFER_SIZE, 0, (struct sockaddr *) &cli_addr, &clilen);
-        if (n < 0)
-            error("ERROR on recvfrom");
-        printf("Received packet from %s:%d\n", inet_ntoa(cli_addr.sin_addr), ntohs(cli_addr.sin_port));
-        printf("Data: %s\n", buffer);
+#ifdef _WIN32
+    HANDLE thread;
+    DWORD threadId;
+    thread = CreateThread(NULL, 0, listener_thread, &sockfd, 0, &threadId);
+    if (thread == NULL)
+        error("ERROR creating thread");
+#else
+    pthread_t thread;
+    if (pthread_create(&thread, NULL, listener_thread, (void *)&sockfd) != 0) {
+        error("ERROR creating thread");
     }
+#endif
 
-    #ifdef _WIN32
+    // Wait for 10 seconds
+    sleep(10);
+
+#ifdef _WIN32
+    TerminateThread(thread, 0);
+    CloseHandle(thread);
+#else
+    pthread_cancel(thread);
+    pthread_join(thread, NULL);
+#endif
+
+#ifdef _WIN32
     closesocket(sockfd);
     WSACleanup();
-    #else
+#else
     close(sockfd);
-    #endif
+#endif
 
     return 0;
 }
