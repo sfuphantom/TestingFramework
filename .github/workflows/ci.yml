@@ -29,7 +29,7 @@ jobs:
       #     ./output/rcv.exe 8080
 
       - name: Run Python script
-        run: python3 /src/Upstream.py
+        run: python3 src/Upstream.py
         
       - name: Mimick Interprocess Communication 
         run: echo "Mock transmission data" | python3 /src/Upstream.py
