@@ -3,8 +3,10 @@ name: CI
 on:
   push:
     branches:
-      - main  # Adjust branch name as needed
-
+      - main
+      - InitialPrototype
+  workflow_dispatch:  # Add this line to enable manual workflow dispatch
+    
 jobs:
   test:
     runs-on: ubuntu-latest  # Use the latest version of Ubuntu as the runner
