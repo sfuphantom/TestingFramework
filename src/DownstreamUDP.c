@@ -40,6 +40,13 @@ void *listener_thread(void *arg) {
             error("ERROR on recvfrom");
         printf("Received packet from %s:%d\n", inet_ntoa(cli_addr.sin_addr), ntohs(cli_addr.sin_port));
         printf("Data: %s\n", buffer);
+
+        char reply[BUFFER_SIZE];
+        strcpy(reply, "Message received: ");
+        strcat(reply, buffer);
+        
+        // Send reply
+        sendto(sockfd, reply, strlen(reply), 0, (struct sockaddr *) &cli_addr, clilen);
     }
     
 #ifdef _WIN32
