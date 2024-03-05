@@ -25,15 +25,15 @@ jobs:
 
       - name: Compile and run mock Vehicle Control Unit
         run: |
-          gcc DownstreamUDP.C -o rcv.exe -lws2_32
-          ./rcv.exe & sleep 5
+          gcc ../src/DownstreamUDP.C -o rcv.exe -lws2_32
+          ../src/rcv.exe
 
       - name: Run Python script
-        run: python3 Upstream.py
+        run: python3 ../src/Upstream.py
         
       - name: Mimick Interprocess Communication 
-        run: echo "Mock transmission data" | python3 Upstream.py
+        run: echo "Mock transmission data" | python3 ../src/Upstream.py
 
       - name: Terminate Python script 
-        run: echo "!" | python3 Upstream.py
+        run: echo "!" | python3 ../src/Upstream.py
 
