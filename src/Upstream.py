@@ -1,6 +1,10 @@
 import socket
 import threading
 import time
+import os
+
+import subprocess
+import platform
 
 class DataCommunicator:
     def __init__(self, host, send_port, listen_port):
@@ -54,11 +58,29 @@ class DataCommunicator:
         self.running = False
 
 
+def run_batch_file():
+    batch_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'execPOC.bat'))
+    subprocess.Popen(batch_file_path, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL)
+
+def run_shell_script():
+    shell_script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'execPOC.sh'))
+    subprocess.Popen(['sh', shell_script_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL)
+
+def invoke_runscript():
+    if platform.system() == 'Windows':
+        batch_thread = threading.Thread(target=run_batch_file)
+        batch_thread.start()
+    else:
+        shell_thread = threading.Thread(target=run_shell_script)
+        shell_thread.start()
+
 if __name__ == "__main__":
     communicator = DataCommunicator('127.0.0.1', 8080, 8081)
 
     # Start listener thread
     communicator.start_listener_thread()
+
+    invoke_runscript()
 
     try:
         # Send data in a separate thread
@@ -71,6 +93,4 @@ if __name__ == "__main__":
     finally:
         # Close the connection when done
         communicator.close_connection()
-        communicator.listener_thread.join(timeout = 3)
-
-
+        communicator.listener_thread.join(timeout=3)
