@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main  # Adjust branch name as needed
+
+jobs:
+  test:
+    runs-on: ubuntu-latest  # Use the latest version of Ubuntu as the runner
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc
+          sudo apt-get install -y python3
+
+      - name: Compile and run C program
+        run: |
+          gcc DownstreamUDP.C -o rcv.exe -lws2_32
+          ./rcv.exe & sleep 5
+
+      - name: Run Python script
+        run: python3 Upstream.py
