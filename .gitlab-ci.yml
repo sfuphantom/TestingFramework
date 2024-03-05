@@ -1,0 +1,20 @@
+# This is an example GitLab CI/CD configuration file
+
+# Define stages for the pipeline
+stages:
+  - test
+
+# Define job to compile and run C program and Python script
+test:
+  stage: test
+  script:
+    # Compile C program
+    - gcc DownstreamUDP.C -o rcv.exe -lws2_32
+    # Run C program
+    - ./rcv.exe &
+    # Wait for C program to start
+    - sleep 5  # Adjust as needed
+    # Run Python script
+    - python3 Upstream.py
+  tags:
+    - windows  # Assuming you need to run on a Windows runner with gcc and Python available
