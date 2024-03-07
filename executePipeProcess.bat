@@ -1,7 +1,7 @@
-rem @echo off
+@echo on
 
 rem Navigate to the source directory
-gcc archive/PipeCom.C -o pipe.exe -lws2_32
+gcc archive/PipeCom.C -o archive/pipe.exe -lws2_32
 
 rem Navigate to the output directory
 cd archive
