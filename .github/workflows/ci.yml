@@ -27,8 +27,8 @@ jobs:
 
       - name: Compile and run mock automation test
         run: |
-          gcc src/CICDtest.c -o .\output\CICDtest.exe
-          ./output/CICDtest.exe
+          gcc CI_workflow_test\CICDtest.c -o CI_workflow_test\CICDtest.exe
+          .\CI_workflow_test\CICDtest.exe
 
       # - name: Compile and run mock Vehicle Control Unit
       #   run: |
