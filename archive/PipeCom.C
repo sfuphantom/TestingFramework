@@ -1,35 +1,38 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <fcntl.h>
-#include <io.h>
+#include <windows.h>
 
 int main() {
     const char *pipe_path = "\\\\.\\pipe\\my_pipe";
-    char buffer[256];
+    HANDLE pipe_handle;
 
-    // Open the named pipe for reading
-    int fd = open(pipe_path, O_RDONLY);
+    // Open the named pipe for writing
+    pipe_handle = CreateFile(
+        pipe_path,
+        GENERIC_WRITE,
+        0,
+        NULL,
+        OPEN_EXISTING,
+        0,
+        NULL
+    );
 
-    if (fd == -1) {
-        perror("Error opening pipe for reading");
+    if (pipe_handle == INVALID_HANDLE_VALUE) {
+        fprintf(stderr, "Error opening pipe for writing: %d\n", GetLastError());
         exit(EXIT_FAILURE);
     }
 
-    // Read data from the pipe
-    ssize_t bytesRead = read(fd, buffer, sizeof(buffer));
-    buffer[bytesRead] = '\0';
-
-    if (bytesRead == -1) {
-        perror("Error reading from pipe");
-        close(fd);
+    // Write data to the pipe
+    const char *data = "Hello from C!";
+    DWORD bytes_written;
+    if (!WriteFile(pipe_handle, data, strlen(data), &bytes_written, NULL)) {
+        fprintf(stderr, "Error writing to pipe: %d\n", GetLastError());
+        CloseHandle(pipe_handle);
         exit(EXIT_FAILURE);
     }
 
-    // Print the received message
-    printf("Received message: %s\n", buffer);
-
-    // Close the pipe
-    close(fd);
+    // Close the pipe handle
+    //CloseHandle(pipe_handle);
 
     return 0;
 }

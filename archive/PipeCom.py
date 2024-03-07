@@ -7,10 +7,11 @@ if platform.system() == "Windows":
     import win32file
 
     pipe_path = r'\\.\pipe\my_pipe'
-    # Create the named pipe
+
+    # Create the named pipe with PIPE_ACCESS_DUPLEX
     handle = win32pipe.CreateNamedPipe(
         pipe_path,
-        win32pipe.PIPE_ACCESS_OUTBOUND,
+        win32pipe.PIPE_ACCESS_DUPLEX,  # Change to PIPE_ACCESS_DUPLEX
         win32pipe.PIPE_TYPE_MESSAGE | win32pipe.PIPE_READMODE_MESSAGE | win32pipe.PIPE_WAIT,
         1,  # Number of instances
         65536,  # Out buffer size
@@ -19,13 +20,18 @@ if platform.system() == "Windows":
         None  # Security attributes
     )
 
-    print("what")
-
     # Connect to the named pipe
     win32pipe.ConnectNamedPipe(handle, None)
 
     # Write the message to the named pipe
     win32file.WriteFile(handle, b"Hello from Python!")
+
+    # Read the response from the named pipe
+    _, data = win32file.ReadFile(handle, 100)
+    print(data)
+
+    # Close the pipe handle
+    win32file.CloseHandle(handle)
 
     # Keep the named pipe open for a short duration
     time.sleep(1)
