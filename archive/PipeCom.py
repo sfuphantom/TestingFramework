@@ -5,7 +5,16 @@ import subprocess
 import threading
 
 def run_script(script_path):
-    subprocess.Popen(script_path, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL, shell=True, start_new_session=True)
+    # Start the process without redirecting stderr
+    process = subprocess.Popen(script_path, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, stdin=subprocess.DEVNULL, shell=True, start_new_session=True)
+    
+    # Wait for the process to complete and capture stdout and stderr
+    _, stderr = process.communicate()
+    
+    # Check if there were any errors
+    if stderr:
+        print("Errors encountered:")
+        print(stderr.decode())  # Decoding from bytes to string for readability
 
 def invoke_runscript():
     script_path = None
@@ -35,8 +44,7 @@ def create_pipe():
             0,
             None
         )
-        invoke_runscript()
-        print("invoking runsciprt")
+      
         win32pipe.ConnectNamedPipe(handle, None)
         print("pipe connected")
 
@@ -59,6 +67,8 @@ def close_pipe(pipe):
 
 if __name__ == "__main__":
     pipe = None
+    print("invoking runsciprt")
+    invoke_runscript()
     try:
         pipe = create_pipe()
 
