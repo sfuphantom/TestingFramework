@@ -27,8 +27,10 @@ jobs:
 
       - name: Compile and run mock automation test
         run: |
-          gcc CI_workflow_test\CICDtest.c -o CI_workflow_test\CICDtest.exe
-          .\CI_workflow_test\CICDtest.exe
+            gcc CI_workflow_test/CICDtest.c -o CI_workflow_test/CICDtest.exe
+            ./CI_workflow_test/CICDtest.exe
+        shell: /usr/bin/bash -e {0}
+        
 
       # - name: Compile and run mock Vehicle Control Unit
       #   run: |
