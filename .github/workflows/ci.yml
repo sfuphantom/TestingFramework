@@ -23,17 +23,24 @@ jobs:
           sudo apt-get install -y gcc
           sudo apt-get install -y python3
 
+        
+
+      - name: Compile and run mock automation test
+        run: |
+          gcc src/CICDtest.c -o .\output\CICDtest.exe
+          ./output/CICDtest.exe
+
       # - name: Compile and run mock Vehicle Control Unit
       #   run: |
       #     gcc src/DownstreamUDP.c -o output/rcv.exe
       #     ./output/rcv.exe 8080
 
-      - name: Run Python script
-        run: python3 src/Upstream.py
+      # - name: Run Python script
+      #   run: python3 src/Upstream.py
         
-      - name: Mimick Interprocess Communication 
-        run: echo "Mock transmission data" | python3 /src/Upstream.py
+      # - name: Mimick Interprocess Communication 
+      #   run: echo "Mock transmission data" | python3 /src/Upstream.py
 
-      - name: Terminate Python script 
-        run: echo "!" | python3 /src/Upstream.py
+      # - name: Terminate Python script 
+      #   run: echo "!" | python3 /src/Upstream.py
 
