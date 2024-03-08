@@ -22,6 +22,7 @@ class SubprocessRunner:
 class PipeHandler:
     def __init__(self, pipe_path):
         self.pipe_path = pipe_path
+        self.handle = None
 
     def create_pipe(self):
         if platform.system() == 'Windows':
@@ -95,6 +96,7 @@ if __name__ == "__main__":
     try:
         pipe_handler.create_pipe()
 
+        
         message = "Hello from Python!"
         pipe_handler.write_to_pipe(message)
 
