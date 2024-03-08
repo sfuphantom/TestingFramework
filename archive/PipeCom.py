@@ -8,16 +8,23 @@ class SubprocessRunner:
         self.script_path = script_path
 
     def run_script(self):
-        # Start the process without redirecting stderr
-        process = subprocess.Popen(self.script_path, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, stdin=subprocess.DEVNULL, shell=True, start_new_session=True)
+        # Start the process and redirect both stdout and stderr
+        process = subprocess.Popen(self.script_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.DEVNULL, shell=True, start_new_session=True)
         
         # Wait for the process to complete and capture stdout and stderr
-        _, stderr = process.communicate()
+        stdout, stderr = process.communicate()
         
         # Check if there were any errors
         if stderr:
             print("Errors encountered:")
             print(stderr.decode())  # Decoding from bytes to string for readability
+
+        # Print captured stdout
+        if stdout is not None:  # Check if stdout is not None
+            print("Captured stdout:")
+            print(stdout.decode())
+
+
 
 class PipeHandler:
     def __init__(self, pipe_path):
