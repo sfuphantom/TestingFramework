@@ -1,5 +1,4 @@
 # Testing Framework used for Validating the FSAE electric vehicle 2024
-
 Automation and scalability compatible with multiple vehicle systems
 
 ## Migrating the following architecture for Software in the Loop Testing
