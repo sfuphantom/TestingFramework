@@ -99,6 +99,7 @@ void close_pipe(Pipe pipe) {
 
 int main() {
     const char *pipe_path = "\\\\.\\pipe\\my_pipe";
+    printf("about to connect to pipe");
     Pipe pipe = connect_to_pipe(pipe_path);
 
     // Read data from the pipe
