@@ -2,7 +2,7 @@
 #Date : November 2023
 #Description : Encapsulates VCU serial communication, Drive communication, sim model generation, and data formatting
 
-from generate_simulation import Simulation, VCU_Pedal, VCU_Pedals
+from generate_simulation import Simulation, VCU_Pedal, VCU_Pedals, BMS__Gen_Simulation
 from UploadDrive import VcuGDriveInterface
 from vcu_communication import VCU_Communication, ResponseVCU
 from StatesAndEvents import ResponseVCU, EventData, StateData
@@ -46,7 +46,7 @@ class VCUSimInterface:
 
             data_generator (DataGeneration): An reference to the DataGeneration class for data formatting.
         """
-        self.vcu_writer = VCU_Communication(None)
+        self.vcu_writer = VCU_Communication
         self.simulation: Simulation = Simulation()
         self.vcu_gdrive_interface: VcuGDriveInterface = VcuGDriveInterface()
         self.data_generator = DataGeneration
@@ -146,10 +146,95 @@ class VCUSimInterface:
         return {**time_data,**sim_model, **res_data}
 
 
+
+class BMS_Simulation():
+    
+
+    # Get arguments per BMS Slave
+    # Each slave will be represented by a specific waveform,
+        #We assume there is an internal delay, so we will need to make a precision
+        # The delay is based on the sampling frequency of the threads
+        # But ideally the framework does not know
+    # Once a simulation is complete for a BMS slave
+    # Define an encoding
+
+    # Send over the data to the BMS...
+
+    def __init__(self) -> None:
+        self.simulation = BMS__Gen_Simulation()
+        self.simulation.begin()
+        
+        
+    def begin(self):
+        """
+        Initialization point of the simulation interface. Executes the simulation, retrieves the results
+        and finally uploads the data to the Google Drive.
+        """
+        simulation_res : bool = self.get_command()
+        if (simulation_res):
+            #write_res = self._write_data()
+            # self.data_generator.write_to_csv(write_res)
+            # self.vcu_gdrive_interface.upload_data()
+            exit()
+        else:
+            #Handle 
+            raise Exception("Problem with building simulation")
+
+
+    def get_command(self) -> bool:
+        """
+        Retrieve user input
+        """
+
+        while True:
+            args = input(">>>")
+            ret = self.simulation._parse_args(args)
+            #Simulation Args
+            if isinstance(ret, dict):
+                
+                #because the batteries are in paralle, we do not need input for individual cells
+                temp_input = input("Tempurature Dependant: Y or N")
+                if (temp_input == "Y"):
+                    ret["Tempurate": "D" ]
+                else:
+                    ret["Tempurate" : self.simulation.get_tempurate_args()]
+
+                voltage_transducer = input("Vtrans")
+                if (voltage_transducer == "Y"):
+                    ret["Vtrans": "D" ]
+                else:
+                    ret["Vtrans" : self.simulation.get_tempurate_args()]
+
+
+
+                
+                #self.simulation.add_simulation(ret)
+                #self._generate_plot(self.simulation.plotted_points, self.simulation.sim_duration)
+            #Manual Control Args
+            if isinstance(ret, tuple):
+                #self.execute_manual_control(*ret)
+                pass
+            #Exit Or Help, or Invalid args
+            if isinstance(ret, bool):
+                if not ret:
+                    pass
+                if ret:
+                    # Successfully wrote values
+                    # TODO: Clear VCU plots
+                    return True
+                
+
+
 #call this file in python using python3 sim_interface.py 
 if __name__ == "__main__":
     interface : VCUSimInterface = VCUSimInterface()
     interface.begin()
+
+    ##May need a way to seperate how to define BMS interface vs VCU
+
+    # BMS_Sim = BMS_Simulation()
+    # BMS_Sim.begin()
+
 
 
 

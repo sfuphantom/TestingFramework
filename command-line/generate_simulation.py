@@ -186,6 +186,95 @@ class Simulation:
             return sim_wave.standard_mapping(percent)
         
 
+class BMS__Gen_Simulation:
+    
+    CSV_FILE_NAME = "SimulatedValues.csv"
+    
+    wave_forms = AnalogWave._registered_waves
+    
+    def __init__(self):
+        self.plotted_points: dict[VCU_Pedals, list[float]] = {key: [] for key in VCU_Pedals}
+        self.sim_duration: int = 0
+    
+    def _parse_args(self, args: str) -> Union[dict, tuple, bool]:
+        """
+        Handle user input from the prompt for new commands.
+        """
+        exit_keys = [":q", "quit", "exit", "exit()"]
+        help_keys = ["-h", "--help", "help"]
+        execute_keys = ["-e", "execute", "--execute"]
+        
+        num_args = len(args.split())
+        
+        if num_args == 1:
+            if args in exit_keys:
+                return exit()
+            if args in help_keys:
+                print(self._generate_help_message())
+                return False
+            if args in execute_keys:
+                # Begin writing to VCU
+                return True
+        
+        if num_args == 8:
+            if self._validate_sim_arguments(args):
+                return self._build_arguments(args)
+            else:
+                print(f"Invalid Sim Arguments: {args}")
+                return False
+        
+        print(f"Unknown args - {args}")
+    
+    def _validate_sim_arguments(self, args: str) -> bool:
+        """
+        Verify the arguments for the simulation
+        """
+        pattern = r'^(\d+|0|[1-9]\d*) (\d+|0|[3-9]\d*) ([a-zA-Z_]+) ([a-zA-Z_]+) ([a-zA-Z_]+) ([a-zA-Z_]+) (\w+) (\w+)$'
+        match = re.match(pattern, args)
+        return bool(match)
+    
+    def _build_arguments(self, args: str) -> dict:
+        arg_tuple = args.split()
+        return {
+            'Cycles': int(arg_tuple[0]),
+            'Precision': int(arg_tuple[1]),
+            'Accumulator1_Wave': arg_tuple[2],
+            'Accumulator2_Wave': arg_tuple[3],
+            'Accumulator3_Wave': arg_tuple[4],
+            'Accumulator4_Wave': arg_tuple[5],
+            'TempAccumulators': [arg_tuple[6], arg_tuple[7]],
+            'VoltageTransducer': arg_tuple[8],
+            'CurrentTransducer': arg_tuple[9],
+        }
+    
+    #Define a base tempurate
+
+    BASE_TEMPURATE = 60 
+
+
+    
+    def add_simulation(self, args):
+
+        values = {"T1", "T2", "T3", "T4", "V1", "V2", "V3", "V4", "VT", "CT"}
+        # for cycles in range(cycles):
+        #     for precision:
+                #based on the input argument, we can model them seperetly
+                #the data then gets sent over into the valus
+                # if "Dependant": map(V2 -> T2, using mapping voltage function):
+                #     #it is up to the engineers, but the change in the voltage should represent tempurate change as well
+
+                # else:
+                #     "Independant" : map(percentage, T2, waveform):
+
+                #same for transducers
+                    
+                #Up to the engineers to figure out how we want to define the voltage transducer values
+                    
+                #We set some sort of parameter
+                    
+
+    def _get_tempurate_args(self):
+        return input("Temp Model >>>")
 
 
 
