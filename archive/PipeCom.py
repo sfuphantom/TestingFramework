@@ -54,15 +54,17 @@ class PipeHandler:
             if not os.path.exists(self.pipe_path):
                 os.mkfifo(self.pipe_path)
 
-            self.handle = open(self.pipe_path, "w+")
+            print("about to open pipe path" + pipe_path)
+            self.handle = open(self.pipe_path, "w+b")
 
     def close_pipe(self):
         if platform.system() == 'Windows':
             import win32file
             win32file.CloseHandle(self.handle)
         else:
-            self.handle.close()
-            os.remove(self.pipe_path)
+            if self.handle:
+                self.handle.close()
+                os.remove(self.pipe_path)
 
     def write_to_pipe(self, message):
         if platform.system() == 'Windows':
@@ -101,8 +103,9 @@ if __name__ == "__main__":
     thread.start()
 
     try:
+        print("creating Pipe")
         pipe_handler.create_pipe()
-
+        print("pipe created")
         
         message = "Hello from Python!"
         pipe_handler.write_to_pipe(message)

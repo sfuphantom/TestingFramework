@@ -41,6 +41,7 @@ Pipe connect_to_pipe(const char *pipe_path) {
         }
     #else
         pipe.fd = open(pipe_path, O_RDWR);
+        printf("connecting to pipe");
         if (pipe.fd == -1) {
             perror("Error opening pipe");
             exit(EXIT_FAILURE);
@@ -98,8 +99,15 @@ void close_pipe(Pipe pipe) {
 }
 
 int main() {
-    const char *pipe_path = "\\\\.\\pipe\\my_pipe";
-    printf("about to connect to pipe");
+    fflush(stdout);
+    printf("what the hell is going on");
+    const char *pipe_path =
+    #ifdef OS_Windows
+        "\\\\.\\pipe\\my_pipe";
+    #else
+        "my_pipe";
+    #endif
+    printf("About to connect my pipe");
     Pipe pipe = connect_to_pipe(pipe_path);
 
     // Read data from the pipe
