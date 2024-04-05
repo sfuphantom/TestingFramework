@@ -46,7 +46,7 @@ class VCUSimInterface:
 
             data_generator (DataGeneration): An reference to the DataGeneration class for data formatting.
         """
-        self.vcu_writer = VCU_Communication
+        self.vcu_writer = VCU_Communication(None)
         self.simulation: Simulation = Simulation()
         self.vcu_gdrive_interface: VcuGDriveInterface = VcuGDriveInterface()
         self.data_generator = DataGeneration
