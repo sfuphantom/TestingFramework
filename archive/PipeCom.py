@@ -58,6 +58,7 @@ class PipeHandler:
             self.handle = open(self.pipe_path, "w+b")
 
     def close_pipe(self):
+        print("Closing Pipe")
         if platform.system() == 'Windows':
             import win32file
             win32file.CloseHandle(self.handle)
@@ -100,7 +101,7 @@ if __name__ == "__main__":
 
     print("invoking runscript")
     thread = threading.Thread(target=subprocess_runner.run_script)
-    thread.start()
+    # thread.start()
 
     try:
         print("creating Pipe")
@@ -110,11 +111,14 @@ if __name__ == "__main__":
         message = "Hello from Python!"
         pipe_handler.write_to_pipe(message)
 
-        data = pipe_handler.read_from_pipe()
-        print(data)
+
+        while (1):
+            data = pipe_handler.read_from_pipe()
+            print(data)
 
     except Exception as e:
         print(f"An error occurred: {e}")
 
     finally:
         pipe_handler.close_pipe()
+
